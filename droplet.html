@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+
+	    <meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+
+		<link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32" />
+		<link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16" />
+
+		<style>
+
+			canvas {
+				border: 1px solid #d3d3d3;
+				background-color: #f1f1f1;
+			}
+
+		</style>
+
+	</head>
+
+	<body onload="startGame()">
+
+		<script type="text/javascript">
+
+			var gamePiece;
+			var droplets = [];
+			var score = 0;
+			var scoreText;
+			var health, healthBox;
+			var healthVal = 120;
+			var gameActive = true;
+
+			function startGame() {
+				gamePiece = new component(30, 30, "red", 10, 120, "oval");
+				scoreText = new component("30px", "Consolas", "black", 20, 35, "text");
+				health = new component(30, 120, "green", window.screen.width-100, 30, "rect");
+				healthBox = new component(30, 120, "black", window.screen.width-100, 30, "rectStroke");
+				myGameArea.start();
+			}
+
+			var myGameArea = {
+				canvas : document.createElement("canvas"),
+				start : function() {
+					this.canvas.width = window.screen.width;
+					this.canvas.height = window.screen.height - 150;
+					this.context = this.canvas.getContext("2d");
+					document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+					this.frameNo = 0;
+					this.interval = setInterval(updateGameArea, 20);
+					window.addEventListener('mousemove', function(e) {
+						myGameArea.x = e.pageX-10;
+						myGameArea.y = e.pageY-10;
+					});
+				},
+				clear : function() {
+					this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+					this.context.fillStyle = "white";
+					this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+				},
+				stop : function() {
+					gameOver = new component("100px", "Consolas", "red", window.screen.width/2-300, window.screen.height/2-100, "text");
+					gameOver.text = "Game Over";
+					droplets = [];
+					updateGameArea();
+					gameOver.update();
+					gameActive = false;
+				}
+			}
+
+			function everyinterval(n) {
+				if((myGameArea.frameNo / n) % 1 == 0) {return true;}
+				return false;
+			}
+
+			function component(width, height, color, x, y, type) {
+				this.type = type;
+				this.width = width;
+				this.height = height;
+				this.color = color;
+				this.speedX = 0;
+				this.speedY = 0;
+				this.x = x;
+				this.y = y;
+				this.gravity = 0.5;
+				this.update = function() {
+					ctx = myGameArea.context;
+					if(this.type == "text") {
+						ctx.font = this.width + " " + this.height;
+						ctx.fillStyle = color;
+						ctx.fillText(this.text ,this.x, this.y);
+					} else if(this.type == "oval") {
+						ctx.fillStyle = color;
+						ctx.beginPath();
+						ctx.arc(this.x, this.y, this.width/2, 0, 2 * Math.PI);
+						ctx.fill();
+					} else if(this.type == "rect") {
+						if(this.height <= 30) {
+							this.color = "red";
+						} else if(this.height <= 80) {
+							this.color = "yellow";
+						} else {
+							this.color = "green";
+						}
+						console.log(this.height);
+						ctx.fillStyle = this.color;
+						ctx.fillRect(this.x, this.y, this.width, this.height);
+					} else if(this.type == "rectStroke") {
+						ctx.fillStyle = color;
+						ctx.strokeRect(this.x, this.y, this.width, this.height);
+					}
+				}
+				this.newPos = function() {
+					this.x += this.speedX;
+					this.y += this.speedY;
+				}
+				this.crashWith = function(obj) {
+					var myCenterX = this.x + (this.width/2);
+					var myCenterY = this.y + (this.height/2);
+					var oCenterX = obj.x + (obj.width/2);
+					var oCenterY = obj.y + (obj.height/2);
+
+					var crash = false;
+					if(Math.sqrt(Math.pow(myCenterX-oCenterX, 2) + Math.pow(myCenterY-oCenterY, 2)) < this.width/2 + obj.width/2) {
+						crash = true;
+						if(this.color == "blue" && this.width >= 7) {
+							var newDrop = new component(this.width/2, this.height/2, this.color, this.x + this.width, this.y, "oval");
+							newDrop.speedY = -3;
+							this.speedY = -3;
+							droplets.push(newDrop);
+							this.x = this.x - this.width;
+							this.width = this.width/2;
+							this.height = this.height/2;
+						}
+					}
+					return crash;
+				}
+				this.past = function() {
+					return this.y > window.screen.height
+				}
+			}
+
+			function updateGameArea() {
+
+				myGameArea.clear();
+				myGameArea.frameNo++;
+
+				if(gameActive) {
+					var x, y;
+					for(i=0; i<droplets.length; i++) {
+						if(droplets[i].crashWith(gamePiece)) {
+							//droplets.splice(i, 1);
+							score++;
+							break;
+						}
+					}
+
+					if(myGameArea.frameNo == 1 || everyinterval(20)) {
+						wid = myGameArea.canvas.width;
+						droplets.push(new component(50, 50, "blue", Math.random() * wid, -20, "oval"));
+					}
+
+					for(i=0; i<droplets.length; i++) {
+						droplets[i].speedY += droplets[i].gravity;
+						droplets[i].y += droplets[i].speedY;
+						if(droplets[i].past()) {
+							droplets.splice(i, 1);
+							if(droplets[i].width >= 30) {
+								healthVal -= 4;
+								health.y += 4;
+							} else if(droplets[i].width >= 15) {
+								healthVal -= 1;
+								health.y += 1;
+							} else if(droplets[i].width >= 8) {
+								healthVal -= 0.1;
+								health.y += 0.1;
+							}
+							health.height = healthVal;
+							if(healthVal <= 0) {
+								health.width = 0;
+								health.update();
+								myGameArea.stop();
+							}
+						} else {
+							droplets[i].update();
+						}
+					}
+				}
+
+				if(myGameArea.x && myGameArea.y) {
+					gamePiece.x = myGameArea.x;
+					gamePiece.y = myGameArea.y;
+				}
+
+				scoreText.text = "SCORE: " + score;
+				console.log(scoreText.text);
+				scoreText.update();
+				health.update();
+				if(!gameActive) {
+					gameOver.update();
+				}
+				healthBox.update();
+				gamePiece.update();
+			}
+
+		</script>
+
+	</body>
+
+</html>
