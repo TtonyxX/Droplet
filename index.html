@@ -9,12 +9,34 @@
 
 		<link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32" />
 		<link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+		<title>Droplets</title>
 
 		<style>
-
 			canvas {
 				border: 1px solid #d3d3d3;
 				background-color: #f1f1f1;
+			}
+
+			button {
+  				left: 45vw;
+  				top: 55vh;
+  				width: 100px;
+  				height: 50px;
+  				position: absolute;
+  				background-color: rgb(178, 249, 72);
+  				font-family: sans-serif;
+  				font-size: 18px;
+  				border-radius: 10px;
+  				outline: none;
+  				border-color: black;
+  				display: none;
+			}
+
+			button:hover {
+				background-color: rgb(155, 216, 65);
+				cursor: pointer;
 			}
 
 		</style>
@@ -23,8 +45,10 @@
 
 	<body onload="startGame()">
 
-		<script type="text/javascript">
+		<button id="restart" onclick="restart()">Restart</button>
 
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script type="text/javascript">
 			var gamePiece;
 			var droplets = [];
 			var score = 0;
@@ -32,15 +56,22 @@
 			var health, healthBox;
 			var healthVal = 120;
 			var gameActive = true;
+			var highscore;
+
+			function restart() {
+				animateCSS("#restart", "fadeOut", function() {
+					$("#restart").hide();
+					location.href = 'index.html';
+				});
+			}
 
 			function startGame() {
 				gamePiece = new component(30, 30, "red", 10, 120, "oval");
-				scoreText = new component("30px", "Consolas", "black", 20, 35, "text");
+				scoreText = new component("30px", "sans-serif", "black", 20, 35, "text");
 				health = new component(30, 120, "green", window.screen.width-100, 30, "rect");
 				healthBox = new component(30, 120, "black", window.screen.width-100, 30, "rectStroke");
 				myGameArea.start();
 			}
-
 			var myGameArea = {
 				canvas : document.createElement("canvas"),
 				start : function() {
@@ -57,14 +88,13 @@
 				},
 				clear : function() {
 					this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
 					this.context.fillStyle = "white";
 					this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 				},
 				stop : function() {
-					gameOver = new component("100px", "Consolas", "red", window.screen.width/2-300, window.screen.height/2-100, "text");
+					gameOver = new component("100px", "sans-serif", "red", window.screen.width/2-290, window.screen.height/2-100, "text");
 					gameOver.text = "Game Over";
-					highscore = new component("100px", "Consolas", "red", window.screen.width/2-300, window.screen.height/2-300, "text");
+					highscore = new component("80px", "sans-serif", "yellow", window.screen.width/2-300, window.screen.height/2-220, "text");
 					if(localStorage.getItem("highscore") != null) {	
 						if(localStorage.getItem("highscore") < score) {
 							localStorage.setItem("highscore", score);
@@ -78,14 +108,14 @@
 					gameOver.update();
 					highscore.update();
 					gameActive = false;
+					$("#restart").show();
+					animateCSS("#restart", "fadeIn");
 				}
 			}
-
 			function everyinterval(n) {
 				if((myGameArea.frameNo / n) % 1 == 0) {return true;}
 				return false;
 			}
-
 			function component(width, height, color, x, y, type) {
 				this.type = type;
 				this.width = width;
@@ -132,7 +162,6 @@
 					var myCenterY = this.y + (this.height/2);
 					var oCenterX = obj.x + (obj.width/2);
 					var oCenterY = obj.y + (obj.height/2);
-
 					var crash = false;
 					if(Math.sqrt(Math.pow(myCenterX-oCenterX, 2) + Math.pow(myCenterY-oCenterY, 2)) < this.width/2 + obj.width/2) {
 						crash = true;
@@ -152,12 +181,9 @@
 					return this.y > window.screen.height
 				}
 			}
-
 			function updateGameArea() {
-
 				myGameArea.clear();
 				myGameArea.frameNo++;
-
 				if(gameActive) {
 					var x, y;
 					for(i=0; i<droplets.length; i++) {
@@ -167,12 +193,10 @@
 							break;
 						}
 					}
-
 					if(myGameArea.frameNo == 1 || everyinterval(20)) {
 						wid = myGameArea.canvas.width;
 						droplets.push(new component(50, 50, "blue", Math.random() * wid, -20, "oval"));
 					}
-
 					for(i=0; i<droplets.length; i++) {
 						droplets[i].speedY += droplets[i].gravity;
 						droplets[i].y += droplets[i].speedY;
@@ -199,23 +223,35 @@
 						}
 					}
 				}
-
 				if(myGameArea.x && myGameArea.y) {
 					gamePiece.x = myGameArea.x;
 					gamePiece.y = myGameArea.y;
 				}
-
 				scoreText.text = "SCORE: " + score;
 				console.log(scoreText.text);
 				scoreText.update();
 				health.update();
 				if(!gameActive) {
 					gameOver.update();
+					highscore.update();
 				}
 				healthBox.update();
 				gamePiece.update();
 			}
 
+			function animateCSS(element, animationName, callback) {
+			    const node = document.querySelector(element)
+			    node.classList.add('animated', animationName)
+
+			    function handleAnimationEnd() {
+			        node.classList.remove('animated', animationName)
+			        node.removeEventListener('animationend', handleAnimationEnd)
+
+			        if (typeof callback === 'function') callback()
+			    }
+
+			    node.addEventListener('animationend', handleAnimationEnd)
+			}
 		</script>
 
 	</body>
