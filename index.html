@@ -64,9 +64,19 @@
 				stop : function() {
 					gameOver = new component("100px", "Consolas", "red", window.screen.width/2-300, window.screen.height/2-100, "text");
 					gameOver.text = "Game Over";
+					highscore = new component("100px", "Consolas", "red", window.screen.width/2-300, window.screen.height/2-300, "text");
+					if(localStorage.getItem("highscore") != null) {	
+						if(localStorage.getItem("highscore") < score) {
+							localStorage.setItem("highscore", score);
+						}
+					} else {
+						localStorage.setItem("highscore", score);
+					}
+					highscore.text = "Highscore: " + localStorage.getItem("highscore");
 					droplets = [];
 					updateGameArea();
 					gameOver.update();
+					highscore.update();
 					gameActive = false;
 				}
 			}
