@@ -10,33 +10,85 @@
 		<link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32" />
 		<link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16" />
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+		<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
 
 		<title>Droplets</title>
 
 		<style>
+
+			body {
+				font-family: 'Roboto', sans-serif;
+			}
+
 			canvas {
-				border: 1px solid #d3d3d3;
+				border: none;
 				background-color: #f1f1f1;
+				z-index: 1;
 			}
 
 			button {
-  				left: 45vw;
-  				top: 55vh;
+  				top: 50vh;
+  				left: calc(50% - 50px);
   				width: 100px;
   				height: 50px;
   				position: absolute;
   				background-color: rgb(178, 249, 72);
-  				font-family: sans-serif;
-  				font-size: 18px;
+  				font-family: 'Roboto', sans-serif;
+  				font-size: 20px;
   				border-radius: 10px;
   				outline: none;
   				border-color: black;
   				display: none;
+  				transition: all 0.3s;
 			}
 
 			button:hover {
 				background-color: rgb(155, 216, 65);
 				cursor: pointer;
+                transform: scale(1.1);
+			}
+
+			#end-message {
+				text-align: center;
+				z-index: 100;
+				padding-top: 5vh;
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				width: 100%;
+				font-family: 'Roboto', sans-serif;
+				font-size: 80px;
+  				display: none;
+			}
+
+			#gameover {
+				font-size: 100px;
+				color: red;
+				transition: all 0.3s;
+			}
+
+			#gameover:hover {
+				font-size: 110px;
+			}
+			
+			#highscore {
+				color: yellow;
+				transition: all 0.3s;
+			}
+
+			#highscore:hover {
+				font-size: 90px;
+			}
+
+			#score {
+				font-size: 30px;
+				position: absolute;
+				left: 10px;
+				top: -15px;
+			}
+
+			#leaderboard {
+
 			}
 
 		</style>
@@ -45,16 +97,31 @@
 
 	<body onload="startGame()">
 
-		<button id="restart" onclick="restart()">Restart</button>
+
+		<center><button id="restart" onclick="restart()">Restart</button></center>
+
+		<p id="score">Score: </p>
+
+		<div id="end-message">
+			
+			<p>
+			<span id="gameover">Gameover</span>
+			<br>
+			<span id="highscore">Your highscore: </span>	
+			</p>
+
+			<div id="leaderboard"></div>	
+
+		</div>
+
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 		<script type="text/javascript">
 			var gamePiece;
 			var droplets = [];
 			var score = 0;
-			var scoreText;
 			var health, healthBox;
-			var healthVal = 120;
+			var healthVal = 10; // was 120
 			var gameActive = true;
 			var highscore;
 
@@ -63,11 +130,11 @@
 					$("#restart").hide();
 					location.href = 'index.html';
 				});
+				$("#end-message").fadeOut();
 			}
 
 			function startGame() {
 				gamePiece = new component(30, 30, "red", 10, 120, "oval");
-				scoreText = new component("30px", "sans-serif", "black", 20, 35, "text");
 				health = new component(30, 120, "green", window.screen.width-100, 30, "rect");
 				healthBox = new component(30, 120, "black", window.screen.width-100, 30, "rectStroke");
 				myGameArea.start();
@@ -92,9 +159,6 @@
 					this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 				},
 				stop : function() {
-					gameOver = new component("100px", "sans-serif", "red", window.screen.width/2-290, window.screen.height/2-100, "text");
-					gameOver.text = "Game Over";
-					highscore = new component("80px", "sans-serif", "yellow", window.screen.width/2-300, window.screen.height/2-220, "text");
 					if(localStorage.getItem("highscore") != null) {	
 						if(localStorage.getItem("highscore") < score) {
 							localStorage.setItem("highscore", score);
@@ -102,13 +166,12 @@
 					} else {
 						localStorage.setItem("highscore", score);
 					}
-					highscore.text = "Highscore: " + localStorage.getItem("highscore");
+					$("#highscore").html("Your highscore: " + localStorage.getItem("highscore"));
 					droplets = [];
 					updateGameArea();
-					gameOver.update();
-					highscore.update();
 					gameActive = false;
 					$("#restart").show();
+					$("#end-message").fadeIn();
 					animateCSS("#restart", "fadeIn");
 				}
 			}
@@ -145,7 +208,6 @@
 						} else {
 							this.color = "green";
 						}
-						console.log(this.height);
 						ctx.fillStyle = this.color;
 						ctx.fillRect(this.x, this.y, this.width, this.height);
 					} else if(this.type == "rectStroke") {
@@ -227,14 +289,8 @@
 					gamePiece.x = myGameArea.x;
 					gamePiece.y = myGameArea.y;
 				}
-				scoreText.text = "SCORE: " + score;
-				console.log(scoreText.text);
-				scoreText.update();
+				$("#score").html("Score: " + score);
 				health.update();
-				if(!gameActive) {
-					gameOver.update();
-					highscore.update();
-				}
 				healthBox.update();
 				gamePiece.update();
 			}
