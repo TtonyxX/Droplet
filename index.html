@@ -11,111 +11,40 @@
 		<link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16" />
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 		<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+		<link rel="stylesheet" href="style.css">
 
 		<title>Droplets</title>
-
-		<style>
-
-			body {
-				font-family: 'Roboto', sans-serif;
-			}
-
-			canvas {
-				border: none;
-				background-color: #f1f1f1;
-				z-index: 1;
-			}
-
-			button {
-  				top: 50vh;
-  				left: calc(50% - 50px);
-  				width: 100px;
-  				height: 50px;
-  				position: absolute;
-  				background-color: rgb(178, 249, 72);
-  				font-family: 'Roboto', sans-serif;
-  				font-size: 20px;
-  				border-radius: 10px;
-  				outline: none;
-  				border-color: black;
-  				display: none;
-  				transition: all 0.3s;
-			}
-
-			button:hover {
-				background-color: rgb(155, 216, 65);
-				cursor: pointer;
-                transform: scale(1.1);
-			}
-
-			#end-message {
-				text-align: center;
-				z-index: 100;
-				padding-top: 5vh;
-				position: absolute;
-				top: 0px;
-				left: 0px;
-				width: 100%;
-				font-family: 'Roboto', sans-serif;
-				font-size: 80px;
-  				display: none;
-			}
-
-			#gameover {
-				font-size: 100px;
-				color: red;
-				transition: all 0.3s;
-			}
-
-			#gameover:hover {
-				font-size: 110px;
-			}
-			
-			#highscore {
-				color: yellow;
-				transition: all 0.3s;
-			}
-
-			#highscore:hover {
-				font-size: 90px;
-			}
-
-			#score {
-				font-size: 30px;
-				position: absolute;
-				left: 10px;
-				top: -15px;
-			}
-
-			#leaderboard {
-
-			}
-
-		</style>
 
 	</head>
 
 	<body onload="startGame()">
 
-
-		<center><button id="restart" onclick="restart()">Restart</button></center>
-
 		<p id="score">Score: </p>
 
 		<div id="end-message">
 			
-			<p>
 			<span id="gameover">Gameover</span>
 			<br>
-			<span id="highscore">Your highscore: </span>	
-			</p>
+			<span id="highscore">Your highscore: </span>
+			<br>
 
-			<div id="leaderboard"></div>	
+			<center>
+			<div id="leaderboard">
+				<div id="leaderboard-place"></div>
+				<div id="leaderboard-names"></div>
+				<div id="leaderboard-scores"></div>
+			</div>
+			<button id="restart" onclick="restart()">Restart</button>
+			</center>
 
 		</div>
 
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/6.3.1/firebase-app.js"></script>
+  		<script src="https://www.gstatic.com/firebasejs/6.3.1/firebase-firestore.js"></script>
+
 		<script type="text/javascript">
 			var gamePiece;
 			var droplets = [];
@@ -124,13 +53,57 @@
 			var healthVal = 10; // was 120
 			var gameActive = true;
 			var highscore;
+			var leaderboard;
+			var name;
+
+			// Your web app's Firebase configuration
+			var firebaseConfig = {
+			    apiKey: "AIzaSyDqywPzZk_hp2PFwVRspSfPCPI7PgS0FqU",
+			    authDomain: "droplets-e1ef4.firebaseapp.com",
+			    databaseURL: "https://droplets-e1ef4.firebaseio.com",
+			    projectId: "droplets-e1ef4",
+			    storageBucket: "droplets-e1ef4.appspot.com",
+			    messagingSenderId: "807570006250",
+			    appId: "1:807570006250:web:96e93a605614d3b5"
+			};
+			// Initialize Firebase
+			firebase.initializeApp(firebaseConfig);
+			var db = firebase.firestore();
+
+			function setUpLeaderboard(newName, newScore) {
+				db.collection("leaderboard").get().then((querySnapshot) => {
+	                querySnapshot.forEach((doc) => {
+	                	leaderboard = doc.data().scores;
+	                	leaderboard.push({
+	                		name: newName,
+	                		score: newScore
+	                	})
+	                	leaderboard.sort((a, b) => (a.score > b.score) ? 1 : (a.score === b.score) ? ((a.name > b.name) ? 1 : -1) : -1 );
+	                	var newLeaderboard = new Array();
+	                	for(let i=leaderboard.length-12; i<leaderboard.length; i++) {
+	                		newLeaderboard.push(leaderboard[i]);
+	                	}
+	                	doc.ref.set({
+				            scores: newLeaderboard
+				        }, { merge: true });
+	                });
+	            }).then(() => {
+	            	var place = 1;
+					for(let i=leaderboard.length-1; i>=leaderboard.length-10; i--) {
+						$("#leaderboard-place").html($("#leaderboard-place").html() + place + ") <br>");
+						$("#leaderboard-names").html($("#leaderboard-names").html() + "<span class='enlarge'>" + leaderboard[i].name + "</span><br>");
+						$("#leaderboard-scores").html($("#leaderboard-scores").html() + leaderboard[i].score + "<br>");
+						place++;
+					}
+	            });
+			}
 
 			function restart() {
 				animateCSS("#restart", "fadeOut", function() {
 					$("#restart").hide();
-					location.href = 'index.html';
 				});
 				$("#end-message").fadeOut();
+				location.href = 'index.html';
 			}
 
 			function startGame() {
@@ -167,6 +140,19 @@
 						localStorage.setItem("highscore", score);
 					}
 					$("#highscore").html("Your highscore: " + localStorage.getItem("highscore"));
+					if(localStorage.getItem("name") == null) {	
+						swal("Write something here:", {
+						  content: "input",
+						})
+						.then((value) => {
+							name = value;
+							localStorage.setItem("name", name);
+						});
+					} else {
+						name = localStorage.getItem("name");
+					}
+					setUpLeaderboard(name, score);
+
 					droplets = [];
 					updateGameArea();
 					gameActive = false;
