@@ -141,7 +141,7 @@
 					}
 					$("#highscore").html("Your highscore: " + localStorage.getItem("highscore"));
 					if(localStorage.getItem("name") == null) {	
-						swal("Write something here:", {
+						swal("Enter your name:", {
 						  content: "input",
 						})
 						.then((value) => {
