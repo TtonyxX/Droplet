@@ -120,7 +120,7 @@
 					this.context = this.canvas.getContext("2d");
 					document.body.insertBefore(this.canvas, document.body.childNodes[0]);
 					this.frameNo = 0;
-					this.interval = setInterval(updateGameArea, 20);
+					this.interval = setInterval(updateGameArea, 10);
 					window.addEventListener('mousemove', function(e) {
 						myGameArea.x = e.pageX-10;
 						myGameArea.y = e.pageY-10;
