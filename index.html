@@ -84,17 +84,17 @@
 	                		newLeaderboard.push(leaderboard[i]);
 	                	}
 	                	doc.ref.set({
-				            scores: newLeaderboard
-				        }, { merge: true });
+				    scores: newLeaderboard
+				}, { merge: true });
 	                });
 	            }).then(() => {
 	            	var place = 1;
-					for(let i=leaderboard.length-1; i>=leaderboard.length-10; i--) {
-						$("#leaderboard-place").html($("#leaderboard-place").html() + place + ") <br>");
-						$("#leaderboard-names").html($("#leaderboard-names").html() + "<span class='enlarge'>" + leaderboard[i].name + "</span><br>");
-						$("#leaderboard-scores").html($("#leaderboard-scores").html() + leaderboard[i].score + "<br>");
-						place++;
-					}
+				for(let i=leaderboard.length-1; i>=leaderboard.length-10; i--) {
+					$("#leaderboard-place").html($("#leaderboard-place").html() + place + ") <br>");
+					$("#leaderboard-names").html($("#leaderboard-names").html() + "<span class='enlarge'>" + leaderboard[i].name + "</span><br>");
+					$("#leaderboard-scores").html($("#leaderboard-scores").html() + leaderboard[i].score + "<br>");
+					place++;
+				}
 	            });
 			}
 
