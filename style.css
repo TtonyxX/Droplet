@@ -1,3 +1,7 @@
+html, body {
+	overflow-x: hidden;
+}
+
 body {
 	font-family: 'Roboto', sans-serif;
 }
@@ -10,13 +14,14 @@ canvas {
 
 button {
 	width: 100px;
-	height: 50px;
-	background-color: rgb(178, 249, 72);
-	font-family: 'Roboto', sans-serif;
-	font-size: 20px;
+	height: 30px;
+	background-color: gray;
+	font-family: 'Manrope', sans-serif;
+	font-size: 15px;
+	font-weight: bold;
 	border-radius: 10px;
 	outline: none;
-	border-color: black;
+	border: 3px solid black;
 	display: none;
 	transition: all 0.3s;
 }
@@ -30,7 +35,7 @@ button:hover {
 #end-message {
 	text-align: center;
 	z-index: 100;
-	padding-top: 5vh;
+	padding-top: 10px;
 	position: absolute;
 	top: 0px;
 	left: 0px;
@@ -42,8 +47,10 @@ button:hover {
 
 #gameover {
 	font-size: 100px;
+	font-family: 'Manrope', sans-serif;
 	color: red;
 	transition: all 0.3s;
+	font-weight: bold;
 }
 
 #gameover:hover {
@@ -51,7 +58,7 @@ button:hover {
 }
 
 #highscore {
-	color: yellow;
+	color: #2fbeed;
 	transition: all 0.3s;
 }
 
@@ -60,10 +67,11 @@ button:hover {
 }
 
 #score {
-	font-size: 40px;
+	font-size: 35px;
 	position: absolute;
 	left: 10px;
-	top: -25px;
+	top: -30px;
+	font-family: 'Manrope', sans-serif;
 }
 
 #leaderboard {

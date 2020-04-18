@@ -11,6 +11,7 @@
 		<link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16" />
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 		<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css?family=Manrope&display=swap" rel="stylesheet">
 		<link rel="stylesheet" href="style.css">
 
 		<title>Droplets</title>
@@ -23,7 +24,7 @@
 
 		<div id="end-message">
 			
-			<span id="gameover">Gameover</span>
+			<span id="gameover">GAMEOVER</span>
 			<br>
 			<span id="highscore">Your highscore: </span>
 			<br>
@@ -34,7 +35,7 @@
 				<div id="leaderboard-names"></div>
 				<div id="leaderboard-scores"></div>
 			</div>
-			<button id="restart" onclick="restart()">Restart</button>
+			<button id="restart" onclick="restart()">RESTART</button>
 			</center>
 
 		</div>
@@ -55,6 +56,7 @@
 			var highscore;
 			var leaderboard;
 			var name;
+			var dropColor = '#2fbeed';
 
 			// Your web app's Firebase configuration
 			var firebaseConfig = {
@@ -107,9 +109,9 @@
 			}
 
 			function startGame() {
-				gamePiece = new component(30, 30, "red", 10, 120, "oval");
-				health = new component(30, 120, "green", window.screen.width-100, 30, "rect");
-				healthBox = new component(30, 120, "black", window.screen.width-100, 30, "rectStroke");
+				gamePiece = new component(30, 30, "black", 10, 120, "triangle");
+				health = new component(40, 120, "green", window.screen.width-70, 10, "rect");
+				healthBox = new component(40, 120, "black", window.screen.width-70, 10, "rectStroke");
 				myGameArea.start();
 			}
 			var myGameArea = {
@@ -122,8 +124,8 @@
 					this.frameNo = 0;
 					this.interval = setInterval(updateGameArea, 20);
 					window.addEventListener('mousemove', function(e) {
-						myGameArea.x = e.pageX-10;
-						myGameArea.y = e.pageY-10;
+						myGameArea.x = e.pageX-8;
+						myGameArea.y = e.pageY-20;
 					});
 				},
 				clear : function() {
@@ -139,7 +141,7 @@
 					} else {
 						localStorage.setItem("highscore", score);
 					}
-					$("#highscore").html("Your highscore: " + localStorage.getItem("highscore"));
+					$("#highscore").html("Your highscore: <strong>" + localStorage.getItem("highscore") + "</strong>");
 					if(localStorage.getItem("name") == null) {	
 						swal("Enter your name:", {
 						  content: "input",
@@ -199,6 +201,13 @@
 					} else if(this.type == "rectStroke") {
 						ctx.fillStyle = color;
 						ctx.strokeRect(this.x, this.y, this.width, this.height);
+					} else if(this.type == "triangle") {
+						ctx.fillStyle = color;
+						ctx.beginPath();
+						ctx.moveTo(this.x, this.y);
+						ctx.lineTo(this.x + this.width/2, this.y + this.height);
+						ctx.lineTo(this.x - this.width/2, this.y + this.height);
+						ctx.fill();
 					}
 				}
 				this.newPos = function() {
@@ -213,7 +222,7 @@
 					var crash = false;
 					if(Math.sqrt(Math.pow(myCenterX-oCenterX, 2) + Math.pow(myCenterY-oCenterY, 2)) < this.width/2 + obj.width/2) {
 						crash = true;
-						if(this.color == "blue" && this.width >= 7) {
+						if(this.color == dropColor && this.width >= 7) {
 							var newDrop = new component(this.width/2, this.height/2, this.color, this.x + this.width, this.y, "oval");
 							newDrop.speedY = -3;
 							this.speedY = -3;
@@ -243,7 +252,7 @@
 					}
 					if(myGameArea.frameNo == 1 || everyinterval(20)) {
 						wid = myGameArea.canvas.width;
-						droplets.push(new component(50, 50, "blue", Math.random() * wid, -20, "oval"));
+						droplets.push(new component(50, 50, dropColor, Math.random() * wid, -20, "oval"));
 					}
 					for(i=0; i<droplets.length; i++) {
 						droplets[i].speedY += droplets[i].gravity;
@@ -275,7 +284,7 @@
 					gamePiece.x = myGameArea.x;
 					gamePiece.y = myGameArea.y;
 				}
-				$("#score").html("Score: " + score);
+				$("#score").html("SCORE: " + score);
 				health.update();
 				healthBox.update();
 				gamePiece.update();
